@@ -367,6 +367,20 @@ ss.remove = function( elem ) {
 };
 
 /**
+* Tests if an object is empty
+*/
+ss.isEmptyObject: function( obj ) {
+  "use strict";
+  
+  var name;
+  for ( name in obj ) {
+    return false;
+  }
+  return true;
+};
+
+
+/**
  * Accepts either a jQuery object, a string containing an element ID, or an element,
  * verifies that it exists, and returns the element.
  * @param {Mixed} elem
@@ -442,6 +456,7 @@ ss.SimpleUpload = function( options ) {
     hoverClass: '',
     focusClass: '',
     disabledClass: '',
+    appendFilenameToUrl: true,
     onAbort: function( filename, uploadBtn ) {},
     onChange: function( filename, extension, uploadBtn ) {},
     onSubmit: function( filename, extension, uploadBtn ) {},
@@ -895,7 +910,7 @@ ss.SimpleUpload.prototype = {
   */
   _getForm: function( iframe, key ) {
     "use strict";
-
+	
     var form = ss.toElement( '<form method="post" enctype="multipart/form-data"></form>' ),
         url = this._opts.url;
 
@@ -910,7 +925,7 @@ ss.SimpleUpload.prototype = {
             '=' + encodeURIComponent( key );
 
     }
-
+	
     form.action = url;
     form.target = iframe.name;
     return form;
@@ -1013,20 +1028,24 @@ ss.SimpleUpload.prototype = {
         opts = this._opts,
         xhr = ss.newXHR(),
         params = {},
-        queryURL,
+        queryURL = opts.url,
         callback,
         cancel;
 
     // Add name property to query string
-    params[opts.name] = filename;
+    if( opts.appendFilenameToUrl ) {
+	  params[opts.name] = filename;
+	}
 
     // We get the any additional data here after startXHR()
     // in case the data was changed with setData() prior to submitting
     ss.extendObj( params, opts.data );
 
     // Build query string while preserving any existing parameters
-    queryURL = opts.url + ( ( opts.url.indexOf( '?' ) > -1 ) ? '&' : '?' ) + ss.obj2string( params );
-
+    if( !ss.isEmptyObject( params ) ) {
+      queryURL += ( ( opts.url.indexOf( '?' ) > -1 ) ? '&' : '?' ) + ss.obj2string( params );
+    }
+    
     // Inject file size into size box
     if ( sizeBox ) {
       sizeBox.innerHTML = size + 'K';
@@ -1583,7 +1602,7 @@ ss.SimpleUpload.prototype = {
     {
       this.disable();
     }
-
+	
     // Use XHR if supported by browser
     if ( XhrOk ) {
       // Call the startXHR() callback and stop upload if it returns false
