@@ -369,7 +369,7 @@ ss.remove = function( elem ) {
 /**
 * Tests if an object is empty
 */
-ss.isEmptyObject: function( obj ) {
+ss.isEmptyObject = function( obj ) {
   "use strict";
   
   var name;
